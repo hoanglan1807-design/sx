@@ -1,0 +1,5 @@
+{
+  "name": "Merge Sort Visualizer",
+  "description": "An interactive educational tool to visualize and learn the Merge Sort algorithm (Divide and Conquer) with step-by-step animations, pseudocode highlighting, and real-time statistics.",
+  "requestFramePermissions": []
+}
