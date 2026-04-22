@@ -76,7 +76,7 @@ const ALGORITHMS = [
     id: 'bubble' as AlgorithmType,
     name: 'Sắp xếp Nổi bọt',
     englishName: 'Bubble Sort',
-    description: 'Liên tục so sánh và đổi chỗ các cặp phần tử kề nhau nếu chúng sai thứ tự.',
+    description: 'Đưa phần tử nhỏ nhất "nổi" dần từ cuối dãy về phía đầu dãy bằng cách so sánh các cặp kề nhau.',
     complexity: 'O(n²)',
     space: 'O(1)',
     icon: <Zap className="w-6 h-6" />,
@@ -269,26 +269,26 @@ function Visualizer({ type, onBack }: { type: AlgorithmType, onBack: () => void 
       addStep(current, "Bắt đầu sắp xếp chèn.", 0);
       current[0]!.isSorted = true;
       for (let i = 1; i < n; i++) {
-        const key = { ...current[i]! };
-        let j = i - 1;
-        addStep(current, `Xét phần tử ${key.value} tại vị trí ${i}.`, 1, [{ row: 'main', idx: i }], false, { keyIdx: i });
-        
-        while (j >= 0 && current[j]!.value > key.value) {
+        addStep(current, `Chọn phần tử ${current[i]?.value} tại vị trí ${i} làm khóa (Key).`, 1, [{ row: 'main', idx: i }], false, { keyIdx: i });
+        let j = i;
+        while (j > 0 && current[j-1]!.value > current[j]!.value) {
           comparisons++;
-          current[j + 1] = current[j];
-          addStep(current, `Vì ${current[j]?.value} > ${key.value}, dời ${current[j]?.value} sang phải.`, 2, [{ row: 'main', idx: j }, { row: 'main', idx: j + 1 }], false, { keyIdx: j + 1 });
+          swaps++;
+          const temp = current[j];
+          current[j] = current[j-1];
+          current[j-1] = temp;
+          addStep(current, `Vì ${current[j-1]?.value} < ${current[j]?.value}, đổi chỗ chúng để đưa Key về phía trước.`, 2, [{ row: 'main', idx: j-1 }, { row: 'main', idx: j }], true, { keyIdx: j-1 });
           j--;
         }
-        if (j >= 0) comparisons++; // Final comparison that fails
-
-        current[j + 1] = key;
-        current[j + 1]!.isSorted = true;
-        addStep(current, `Chèn ${key.value} vào vị trí ${j + 1}.`, 3, [{ row: 'main', idx: j + 1 }], false, { keyIdx: j + 1 });
+        if (j > 0) comparisons++; // Final comparison that fails to entry while
         
-        // Mark all up to i as sorted for visualization
+        current[j]!.isSorted = true;
+        addStep(current, `Khóa ${current[j]?.value} đã được chèn vào đúng vị trí trong dãy con đã sắp xếp.`, 3, [{ row: 'main', idx: j }], false, { keyIdx: j });
+        
+        // Mark all up to i as sorted visually
         for(let k=0; k<=i; k++) if(current[k]) current[k]!.isSorted = true;
       }
-      addStep(current, `Sắp xếp hoàn tất! Tổng số so sánh: ${comparisons}.`, 0);
+      addStep(current, `Sắp xếp hoàn tất! Tổng số so sánh: ${comparisons}, Thao tác hoán đổi: ${swaps}.`, 0);
     }
     else if (type === 'interchange') {
       addStep(current, "Bắt đầu sắp xếp đổi chỗ trực tiếp.", 0);
@@ -311,23 +311,23 @@ function Visualizer({ type, onBack }: { type: AlgorithmType, onBack: () => void 
       addStep(current, `Sắp xếp hoàn tất! Tổng số so sánh: ${comparisons}, Hoán vị: ${swaps}.`, 0);
     }
     else if (type === 'bubble') {
-      addStep(current, "Bắt đầu sắp xếp nổi bọt.", 0);
+      addStep(current, "Bắt đầu sắp xếp nổi bọt (đưa phần tử nhỏ nhất về đầu).", 0);
       for (let i = 0; i < n - 1; i++) {
-        for (let j = 0; j < n - i - 1; j++) {
+        for (let j = n - 1; j > i; j--) {
           comparisons++;
-          addStep(current, `So sánh cặp kề nhau ${current[j]?.value} và ${current[j+1]?.value}.`, 1, [{ row: 'main', idx: j }, { row: 'main', idx: j + 1 }]);
-          if (current[j]!.value > current[j + 1]!.value) {
+          addStep(current, `So sánh cặp kề nhau ${current[j-1]?.value} và ${current[j]?.value}.`, 1, [{ row: 'main', idx: j - 1 }, { row: 'main', idx: j }]);
+          if (current[j]!.value < current[j - 1]!.value) {
             swaps++;
             const temp = current[j];
-            current[j] = current[j + 1];
-            current[j + 1] = temp;
-            addStep(current, `Đổi chỗ vì ${current[j]?.value} > ${current[j+1]?.value}.`, 2, [{ row: 'main', idx: j }, { row: 'main', idx: j + 1 }], true);
+            current[j] = current[j - 1];
+            current[j - 1] = temp;
+            addStep(current, `Đổi chỗ vì ${current[j]?.value} < ${current[j-1]?.value}.`, 2, [{ row: 'main', idx: j - 1 }, { row: 'main', idx: j }], true);
           }
         }
-        current[n - i - 1]!.isSorted = true;
-        addStep(current, `Phần tử lớn nhất đã nổi lên vị trí ${n - i - 1}.`, 3);
+        current[i]!.isSorted = true;
+        addStep(current, `Phần tử nhỏ nhất đã nổi về vị trí ${i}.`, 3);
       }
-      current[0]!.isSorted = true;
+      current[n - 1]!.isSorted = true;
       addStep(current, `Sắp xếp hoàn tất! Tổng số so sánh: ${comparisons}, Hoán vị: ${swaps}.`, 0);
     }
     else if (type === 'quick') {
@@ -542,11 +542,10 @@ function Visualizer({ type, onBack }: { type: AlgorithmType, onBack: () => void 
     insertion: [
       "for i = 1 to n-1:",
       "  key = arr[i]",
-      "  j = i - 1",
-      "  while j >= 0 and arr[j] > key:",
-      "    arr[j+1] = arr[j]",
-      "    j = j - 1",
-      "  arr[j+1] = key"
+      "  j = i",
+      "  while j > 0 and arr[j-1] > arr[j]:",
+      "    swap(arr[j-1], arr[j])",
+      "    j = j - 1"
     ],
     interchange: [
       "for i = 0 to n-2:",
@@ -556,9 +555,9 @@ function Visualizer({ type, onBack }: { type: AlgorithmType, onBack: () => void 
     ],
     bubble: [
       "for i = 0 to n-2:",
-      "  for j = 0 to n-i-2:",
-      "    if arr[j] > arr[j+1]:",
-      "      swap(arr[j], arr[j+1])"
+      "  for j = n-1 down to i+1:",
+      "    if arr[j] < arr[j-1]:",
+      "      swap(arr[j], arr[j-1])"
     ],
     quick: [
       "quickSort(arr, low, high):",
@@ -589,12 +588,23 @@ function Visualizer({ type, onBack }: { type: AlgorithmType, onBack: () => void 
     // If it's a swap step and there are multiple active elements, make them fly up/down in a sequence
     if (currentStep.isSwap && currentStep.activeIndices.length >= 2) {
       const isFirst = activeIndexInList === 0;
+      // In Insertion Sort, the Key is always the one moving "up/left", we treat it as isFirst
+      const shouldMoveUp = type === 'insertion' ? (idx === currentStep.keyIdx) : isFirst;
+      
       return {
         scale: 1.15,
-        // Keyframes: Start at 0, move to offset, stay there, return to 0
-        y: isFirst ? [0, -120, -120, 0] : [0, 120, 120, 0],
-        rotate: isFirst ? [0, -15, -15, 0] : [0, 15, 15, 0],
+        y: shouldMoveUp ? [0, -120, -120, 0] : [0, 120, 120, 0],
+        rotate: shouldMoveUp ? [0, -15, -15, 0] : [0, 15, 15, 0],
         zIndex: 100,
+      };
+    }
+
+    // Special case for Insertion Sort when NOT swapping but Key is active (initial pick or final step)
+    if (type === 'insertion' && currentStep.keyIdx === idx) {
+      return {
+        scale: 1.15,
+        y: -40,
+        zIndex: 50
       };
     }
 
